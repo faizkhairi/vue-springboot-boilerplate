@@ -39,3 +39,27 @@ cd docker && docker compose up -d
 
 - backend: `BoilerplateApplication.java`, `SecurityConfig.java`, `JwtService.java`, `AuthController.java`, `User.java`, `V1__create_users.sql`
 - frontend: `main.ts`, router, stores, views (Login, Register, Dashboard)
+
+## Pre-Push Build Verification
+
+**Always run the production build locally before pushing to CI:**
+```bash
+# Frontend
+cd frontend && npm run build
+
+# Backend
+cd backend && ./gradlew build
+```
+
+**Important:** The Vite production build (Rollup) does NOT read TypeScript `paths` from `tsconfig.app.json`. Path aliases like `@/` must be configured in **both** `tsconfig.app.json` AND `vite.config.ts` (`resolve.alias`). Missing the Vite alias causes `Cannot resolve @/components/...` errors only during production builds.
+
+## Shadcn-vue Component Pattern
+
+Components use barrel exports. When importing sub-components:
+```typescript
+// Correct — import from index.ts barrel
+import { Card, CardHeader, CardTitle } from '@/components/ui/card'
+
+// The card/index.ts file re-exports all sub-components
+```
+Each component directory has an `index.ts` that exports all sub-components.
