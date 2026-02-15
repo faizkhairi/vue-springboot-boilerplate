@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "7.11.0",
+    "generators": {
+      "typescript-axios": {
+        "inputSpec": "../../backend/build/openapi.json",
+        "output": "./src/generated",
+        "glob": "**",
+        "additionalProperties": {
+          "npmName": "@repo/api-client",
+          "npmVersion": "1.0.0",
+          "supportsES6": true,
+          "withSeparateModelsAndApi": true,
+          "apiPackage": "api",
+          "modelPackage": "models",
+          "withInterfaces": true
+        }
+      }
+    }
+  }
+}

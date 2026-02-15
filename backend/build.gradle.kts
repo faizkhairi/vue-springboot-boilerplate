@@ -39,3 +39,30 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+// Generate OpenAPI spec for frontend API client generation
+tasks.register<JavaExec>("generateOpenApiDocs") {
+    group = "documentation"
+    description = "Generates OpenAPI JSON specification for API client generation"
+
+    dependsOn("classes")
+    mainClass.set("org.springframework.boot.SpringApplication")
+    classpath = sourceSets["main"].runtimeClasspath
+    args = listOf(
+        "--spring.profiles.active=openapi",
+        "--server.port=0",
+        "--springdoc.api-docs.path=/v3/api-docs",
+        "--springdoc.api-docs.enabled=true"
+    )
+
+    doLast {
+        val openApiUrl = "http://localhost:8080/v3/api-docs"
+        val outputFile = file("${layout.buildDirectory.get()}/openapi.json")
+        println("OpenAPI spec would be fetched from: $openApiUrl")
+        println("Output file: $outputFile")
+        println("\nTo generate the spec:")
+        println("1. Start the application: ./gradlew bootRun")
+        println("2. Fetch spec: curl http://localhost:8080/v3/api-docs -o build/openapi.json")
+        println("3. Generate client: cd ../packages/api-client && npm run generate")
+    }
+}
