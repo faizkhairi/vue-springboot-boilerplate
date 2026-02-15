@@ -7,20 +7,18 @@ import com.app.boilerplate.auth.dto.TokenResponse;
 import com.app.boilerplate.common.util.AuditLogger;
 import com.app.boilerplate.email.EmailService;
 import com.app.boilerplate.user.User;
-import com.app.boilerplate.user.UserRepository;
+import com.app.boilerplate.user.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
     private final JwtService jwtService;
     private final EmailService emailService;
     private final AuditLogger auditLogger;
@@ -28,13 +26,11 @@ public class AuthController {
     @Value("${app.url:http://localhost:5173}")
     private String appUrl;
 
-    public AuthController(UserRepository userRepository,
-                          PasswordEncoder passwordEncoder,
+    public AuthController(UserService userService,
                           JwtService jwtService,
                           EmailService emailService,
                           AuditLogger auditLogger) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
         this.jwtService = jwtService;
         this.emailService = emailService;
         this.auditLogger = auditLogger;
@@ -48,7 +44,7 @@ public class AuthController {
             return ResponseEntity.status(401).build();
         }
         String email = jwtService.extractEmail(token);
-        User user = userRepository.findByEmail(email).orElse(null);
+        User user = userService.findByEmail(email).orElse(null);
         if (user == null) {
             auditLogger.log("TOKEN_REFRESH_USER_NOT_FOUND", null);
             return ResponseEntity.status(401).build();
@@ -61,33 +57,32 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<TokenResponse> register(@Valid @RequestBody RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            auditLogger.log("REGISTRATION_DUPLICATE_EMAIL", null, java.util.Map.of("email", request.getEmail()));
+        try {
+            User user = userService.createUser(
+                    request.getName(),
+                    request.getEmail(),
+                    request.getPassword()
+            );
+
+            try {
+                emailService.sendWelcome(user.getEmail(), user.getName(), appUrl);
+            } catch (MessagingException ignored) {
+                // Log in production; do not fail registration
+            }
+
+            String access = jwtService.generateAccessToken(user);
+            String refresh = jwtService.generateRefreshToken(user);
+            return ResponseEntity.ok(new TokenResponse(access, refresh));
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user = userRepository.save(user);
-
-        auditLogger.logRegistration(user.getId().toString(), user.getEmail());
-
-        try {
-            emailService.sendWelcome(user.getEmail(), user.getName(), appUrl);
-        } catch (MessagingException ignored) {
-            // Log in production; do not fail registration
-        }
-        String access = jwtService.generateAccessToken(user);
-        String refresh = jwtService.generateRefreshToken(user);
-        return ResponseEntity.ok(new TokenResponse(access, refresh));
     }
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElse(null);
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+        User user = userService.findByEmail(request.getEmail()).orElse(null);
+
+        if (user == null || !userService.validatePassword(user, request.getPassword())) {
             auditLogger.logAuthFailure(request.getEmail(), user == null ? "user_not_found" : "invalid_password");
             return ResponseEntity.status(401).build();
         }
