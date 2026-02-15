@@ -1,0 +1,11 @@
+node_modules
+dist
+.git
+*.log
+.env*
+coverage
+.nyc_output
+e2e
+playwright.config.ts
+*.spec.ts
+*.test.ts
