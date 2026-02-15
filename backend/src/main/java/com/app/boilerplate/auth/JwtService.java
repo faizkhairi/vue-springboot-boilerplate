@@ -1,5 +1,20 @@
 package com.app.boilerplate.auth;
 
+/**
+ * JWT Token Service
+ *
+ * Handles JWT token generation, validation, and parsing for authentication.
+ * Supports two token types:
+ * - Access tokens (short-lived, 15 minutes default)
+ * - Refresh tokens (long-lived, 7 days default)
+ *
+ * Token validity periods are configurable via application properties:
+ * - app.jwt.access-validity-ms
+ * - app.jwt.refresh-validity-ms
+ *
+ * @see com.app.boilerplate.auth.JwtAuthFilter
+ */
+
 import com.app.boilerplate.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -32,10 +47,22 @@ public class JwtService {
     private static final String TYPE_ACCESS = "access";
     private static final String TYPE_REFRESH = "refresh";
 
+    /**
+     * Generate a short-lived access token for the user
+     *
+     * @param user User entity containing email as the subject
+     * @return JWT access token string
+     */
     public String generateAccessToken(User user) {
         return buildToken(user.getEmail(), accessValidityMs, TYPE_ACCESS);
     }
 
+    /**
+     * Generate a long-lived refresh token for the user
+     *
+     * @param user User entity containing email as the subject
+     * @return JWT refresh token string
+     */
     public String generateRefreshToken(User user) {
         return buildToken(user.getEmail(), refreshValidityMs, TYPE_REFRESH);
     }
@@ -50,10 +77,22 @@ public class JwtService {
                 .compact();
     }
 
+    /**
+     * Extract email (subject) from JWT token
+     *
+     * @param token JWT token string
+     * @return Email address from token subject
+     */
     public String extractEmail(String token) {
         return getClaims(token).getSubject();
     }
 
+    /**
+     * Check if token is a refresh token (vs access token)
+     *
+     * @param token JWT token string
+     * @return true if token type is "refresh", false otherwise
+     */
     public boolean isRefreshToken(String token) {
         try {
             return TYPE_REFRESH.equals(getClaims(token).get(CLAIM_TYPE, String.class));

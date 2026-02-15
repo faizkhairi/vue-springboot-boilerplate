@@ -1,5 +1,15 @@
 package com.app.boilerplate.auth;
 
+/**
+ * Authentication Controller
+ *
+ * Handles user authentication operations including login, registration, and JWT token refresh.
+ * All endpoints return standardized error responses using {@link com.app.boilerplate.common.dto.ErrorResponse}.
+ *
+ * @see com.app.boilerplate.auth.JwtService
+ * @see com.app.boilerplate.user.UserService
+ */
+
 import com.app.boilerplate.auth.dto.LoginRequest;
 import com.app.boilerplate.auth.dto.RefreshRequest;
 import com.app.boilerplate.auth.dto.RegisterRequest;
@@ -37,6 +47,12 @@ public class AuthController {
         this.auditLogger = auditLogger;
     }
 
+    /**
+     * Refresh access token using a valid refresh token
+     *
+     * @param request Contains the refresh token to validate
+     * @return TokenResponse with new access and refresh tokens, or error response
+     */
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(@Valid @RequestBody RefreshRequest request) {
         String token = request.getRefreshToken();
@@ -58,6 +74,14 @@ public class AuthController {
         return ResponseEntity.ok(new TokenResponse(access, refresh));
     }
 
+    /**
+     * Register a new user account
+     *
+     * Creates a new user, sends a welcome email, and returns JWT tokens for immediate authentication.
+     *
+     * @param request Contains name, email, and password for the new user
+     * @return TokenResponse with access and refresh tokens, or error if email already exists
+     */
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         try {
@@ -82,6 +106,15 @@ public class AuthController {
         }
     }
 
+    /**
+     * Authenticate user with email and password
+     *
+     * Validates credentials and returns JWT tokens for authenticated session.
+     * Logs all authentication attempts for audit purposes.
+     *
+     * @param request Contains email and password
+     * @return TokenResponse with access and refresh tokens, or 401 error for invalid credentials
+     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         User user = userService.findByEmail(request.getEmail()).orElse(null);

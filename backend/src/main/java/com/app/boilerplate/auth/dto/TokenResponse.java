@@ -1,5 +1,12 @@
 package com.app.boilerplate.auth.dto;
 
+/**
+ * JWT Token response DTO
+ *
+ * Returned after successful login or registration.
+ * Contains both access token (short-lived) and refresh token (long-lived).
+ * Token type is always "Bearer" for Authorization header usage.
+ */
 public class TokenResponse {
 
     private String accessToken;
