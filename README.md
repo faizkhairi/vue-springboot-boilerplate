@@ -67,6 +67,53 @@ docker compose up -d
 
 - `VITE_API_BASE_URL` — backend base URL (e.g. http://localhost:8080)
 
+## API Documentation
+
+The backend uses **springdoc-openapi** to automatically generate OpenAPI 3.0 documentation from Spring annotations.
+
+**Access Swagger UI:**
+
+1. Start the backend: `cd backend && ./gradlew bootRun`
+2. Navigate to: **http://localhost:8080/swagger-ui.html**
+3. Explore all available endpoints with request/response schemas
+
+**OpenAPI JSON Spec:**
+
+- Available at: http://localhost:8080/v3/api-docs
+- Use this spec for client code generation (e.g., TypeScript Axios client via `openapi-generator-cli`)
+
+**Key Endpoints:**
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/auth/login` | POST | Authenticate with email/password, returns JWT tokens |
+| `/api/auth/register` | POST | Create new user account |
+| `/api/auth/refresh` | POST | Refresh access token using refresh token |
+| `/api/users/me` | GET | Get authenticated user profile |
+
+**Authentication:**
+
+Most endpoints require a valid JWT access token. In Swagger UI:
+
+1. Use `/api/auth/login` to get tokens
+2. Copy the `accessToken` from the response
+3. Click "Authorize" button at the top
+4. Enter: `Bearer {accessToken}`
+5. All subsequent requests will include the token
+
+## Logging
+
+**Backend (SLF4J + Logback):**
+
+- Logs are written to `logs/application.log` (rolling daily, 30-day retention)
+- Audit events (auth, security) are logged to `logs/audit.log` (90-day retention)
+- Log levels: DEBUG (dev), INFO (prod) — configured in `logback-spring.xml`
+
+**Frontend (Structured Logger):**
+
+- Development: logs to browser console with timestamps
+- Production: logs can be sent to backend or third-party service (see `src/utils/logger.ts`)
+
 ## Testing
 
 - **Backend**: `cd backend && ./gradlew test` (JUnit 5 + Testcontainers PostgreSQL). CI runs build with `-x test`; run tests locally.
