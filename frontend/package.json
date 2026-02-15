@@ -1,7 +1,10 @@
 {
-  "name": "frontend",
+  "name": "vue-springboot-boilerplate-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Vue 3 frontend for vue-springboot-boilerplate with Shadcn-vue, Pinia, and Tailwind CSS.",
+  "author": "Faiz Khairi <faiz@faizkhairi.my> (https://faizkhairi.my)",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,6 +1,14 @@
 # Vue + Spring Boot Boilerplate
 
-Full-stack monorepo: Vue 3 + Vite frontend, Spring Boot 3.3 (Java 21) backend. JWT auth, PostgreSQL, Flyway, OpenAPI, Docker Compose.
+Full-stack monorepo: Vue 3 + Vite frontend, Spring Boot 3.3 (Java 21) backend. JWT auth, PostgreSQL, Flyway, OpenAPI, Docker Compose. Zero external account dependencies.
+
+## Quick Create
+
+```bash
+# Create project from template
+gh repo create my-app --template faizkhairi/vue-springboot-boilerplate --private --clone
+cd my-app
+```
 
 ## Features
 
@@ -129,4 +137,8 @@ docker/      — docker-compose (PostgreSQL, Mailpit, optional backend + fronten
 
 ## License
 
-MIT
+[MIT](LICENSE)
+
+## Author
+
+**Faiz Khairi** — [faizkhairi.my](https://faizkhairi.my) — [@faizkhairi](https://github.com/faizkhairi)
