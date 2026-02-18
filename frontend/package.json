@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "description": "Vue 3 frontend for vue-springboot-boilerplate with Shadcn-vue, Pinia, and Tailwind CSS.",
-  "author": "Faiz Khairi <ifaizkhairi@gmail.com> (https://faizkhairi.my)",
+  "author": "Faiz Khairi <ifaizkhairi@gmail.com> (https://faizkhairi.github.io)",
   "license": "MIT",
   "type": "module",
   "scripts": {
