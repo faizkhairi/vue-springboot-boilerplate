@@ -18,7 +18,22 @@ jobs:
         run: |
           cd backend
           gradle wrapper --no-daemon
-          ./gradlew build --no-daemon
+          ./gradlew build -x test --no-daemon
+        env:
+          DATABASE_URL: jdbc:postgresql://localhost:5432/test
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: postgres
+          JWT_SECRET: 0123456789012345678901234567890123456789012345678901234567890123
+
+      # AuthControllerTest and UserServiceTest need infra (Testcontainers
+      # Postgres, a reachable SMTP server) this workflow does not provision,
+      # which is why the main build above skips tests. JwtServiceTest and
+      # JwtSecretConfigTest are plain unit tests with no such dependency,
+      # so they run explicitly to give the JWT_SECRET fix real CI coverage.
+      - name: Run JWT secret validation tests
+        run: |
+          cd backend
+          ./gradlew test --tests "com.app.boilerplate.auth.JwtServiceTest" --tests "com.app.boilerplate.auth.JwtSecretConfigTest" --no-daemon
         env:
           DATABASE_URL: jdbc:postgresql://localhost:5432/test
           DATABASE_USER: postgres

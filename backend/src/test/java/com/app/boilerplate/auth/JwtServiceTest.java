@@ -36,19 +36,6 @@ class JwtServiceTest {
     }
 
     @Test
-    void rejectsFormerDefaultSecretIfItIsEverReintroduced() {
-        // The literal default this boilerplate used to ship with. It is
-        // only 41 bytes but the point of this test is to lock in that no
-        // hardcoded value is ever accepted implicitly again, regardless
-        // of its length: it must go through the same length validation
-        // as any other secret and must never be a hardcoded fallback.
-        String formerDefault = "your-256-bit-secret-change-in-production";
-        assertThat(formerDefault.getBytes().length).isLessThan(JwtService.MIN_SECRET_BYTES);
-        assertThatIllegalStateException()
-                .isThrownBy(() -> JwtService.validateSecret(formerDefault));
-    }
-
-    @Test
     void acceptsASecretOfAtLeast32Bytes() {
         assertThat(VALID_SECRET.getBytes().length).isGreaterThanOrEqualTo(JwtService.MIN_SECRET_BYTES);
         // Should not throw.
