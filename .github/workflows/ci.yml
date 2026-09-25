@@ -18,7 +18,7 @@ jobs:
         run: |
           cd backend
           gradle wrapper --no-daemon
-          ./gradlew build -x test --no-daemon
+          ./gradlew build --no-daemon
         env:
           DATABASE_URL: jdbc:postgresql://localhost:5432/test
           DATABASE_USER: postgres

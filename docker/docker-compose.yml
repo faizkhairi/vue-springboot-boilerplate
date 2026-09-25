@@ -35,7 +35,7 @@ services:
       SMTP_HOST: mailpit
       SMTP_PORT: "1025"
       APP_URL: http://localhost
-      JWT_SECRET: ${JWT_SECRET:-0123456789012345678901234567890123456789012345678901234567890123}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set, e.g. export JWT_SECRET=$(openssl rand -base64 48)}
     ports:
       - "8080:8080"
     depends_on:

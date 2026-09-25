@@ -29,6 +29,9 @@ import java.util.Date;
 @Service
 public class JwtService {
 
+    // 256 bits, the minimum HS256 requires and the value this boilerplate documents.
+    static final int MIN_SECRET_BYTES = 32;
+
     private final SecretKey key;
     private final long accessValidityMs;
     private final long refreshValidityMs;
@@ -38,9 +41,32 @@ public class JwtService {
             @Value("${app.jwt.access-validity-ms}") long accessValidityMs,
             @Value("${app.jwt.refresh-validity-ms}") long refreshValidityMs
     ) {
+        validateSecret(secret);
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.accessValidityMs = accessValidityMs;
         this.refreshValidityMs = refreshValidityMs;
+    }
+
+    /**
+     * Fails fast at startup if app.jwt.secret (JWT_SECRET) is missing, blank,
+     * or too short to sign HS256 tokens with. There is deliberately no
+     * fallback default: a silently-active default secret is a token
+     * forgery risk in any environment that forgets to set the env var.
+     */
+    static void validateSecret(String secret) {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException(
+                    "app.jwt.secret (JWT_SECRET) is not set. Generate one with: openssl rand -base64 48"
+            );
+        }
+        int byteLength = secret.getBytes(StandardCharsets.UTF_8).length;
+        if (byteLength < MIN_SECRET_BYTES) {
+            throw new IllegalStateException(
+                    "app.jwt.secret (JWT_SECRET) must be at least " + MIN_SECRET_BYTES
+                            + " bytes (256 bits) for HS256, but got " + byteLength
+                            + " bytes. Generate one with: openssl rand -base64 48"
+            );
+        }
     }
 
     private static final String CLAIM_TYPE = "type";

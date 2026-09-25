@@ -29,7 +29,7 @@ app:
   mail:
     from: ${SMTP_FROM:noreply@example.com}
   jwt:
-    secret: ${JWT_SECRET:your-256-bit-secret-change-in-production}
+    secret: ${JWT_SECRET}
     access-validity-ms: 900000
     refresh-validity-ms: 604800000
 

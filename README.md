@@ -67,7 +67,10 @@ docker compose up -d
 **Backend** (application.yml / env):
 
 - `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD`
-- `JWT_SECRET` (min 256-bit for HS256)
+- `JWT_SECRET`: **required, no default.** Must be at least 32 bytes (256-bit) for HS256; the app fails fast at startup if it is missing or too short. Generate one with:
+  ```bash
+  openssl rand -base64 48
+  ```
 - `SMTP_HOST`, `SMTP_PORT` (dev: localhost:1025 for Mailpit)
 - `APP_URL`, `SMTP_FROM` (for email links and sender)
 
