@@ -8,6 +8,11 @@ const router = createRouter({
     { path: '/login', name: 'Login', component: () => import('../views/LoginView.vue'), meta: { guest: true } },
     { path: '/register', name: 'Register', component: () => import('../views/RegisterView.vue'), meta: { guest: true } },
     { path: '/dashboard', name: 'Dashboard', component: () => import('../views/DashboardView.vue'), meta: { requiresAuth: true } },
+    { path: '/errors/401', name: 'Error401', component: () => import('../views/errors/401.vue') },
+    { path: '/errors/403', name: 'Error403', component: () => import('../views/errors/403.vue') },
+    { path: '/errors/404', name: 'Error404', component: () => import('../views/errors/404.vue') },
+    { path: '/errors/500', name: 'Error500', component: () => import('../views/errors/500.vue') },
+    { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('../views/errors/404.vue') },
   ],
 })
 

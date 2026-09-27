@@ -8,7 +8,7 @@ test.describe('Authentication Flows', () => {
 
   test('should navigate to register page', async ({ page }) => {
     await page.goto('/register')
-    await expect(page.locator('h1, h2')).toContainText(/register|sign up|create account/i)
+    await expect(page.locator('h1, h2')).toContainText(/register|sign up|create (an )?account/i)
   })
 
   test('should show validation errors for empty login form', async ({ page }) => {
@@ -18,13 +18,12 @@ test.describe('Authentication Flows', () => {
     const submitButton = page.locator('button[type="submit"]')
     await submitButton.click()
 
-    // Check for validation errors
-    const errorVisible = await Promise.race([
-      page.locator('[role="alert"], [class*="error"]').first().isVisible().catch(() => false),
-      page.locator('input:invalid').first().isVisible().catch(() => false),
-    ])
+    // Check for validation errors: either an inline/alert error, or the
+    // browser's native constraint validation marking the required field invalid.
+    const hasAlertOrErrorClass = await page.locator('[role="alert"], [class*="error"]').first().isVisible().catch(() => false)
+    const hasInvalidInput = await page.locator('input:invalid').first().isVisible().catch(() => false)
 
-    expect(errorVisible).toBeTruthy()
+    expect(hasAlertOrErrorClass || hasInvalidInput).toBeTruthy()
   })
 
   test('should show validation errors for empty register form', async ({ page }) => {
@@ -34,13 +33,12 @@ test.describe('Authentication Flows', () => {
     const submitButton = page.locator('button[type="submit"]')
     await submitButton.click()
 
-    // Check for validation errors
-    const errorVisible = await Promise.race([
-      page.locator('[role="alert"], [class*="error"]').first().isVisible().catch(() => false),
-      page.locator('input:invalid').first().isVisible().catch(() => false),
-    ])
+    // Check for validation errors: either an inline/alert error, or the
+    // browser's native constraint validation marking the required field invalid.
+    const hasAlertOrErrorClass = await page.locator('[role="alert"], [class*="error"]').first().isVisible().catch(() => false)
+    const hasInvalidInput = await page.locator('input:invalid').first().isVisible().catch(() => false)
 
-    expect(errorVisible).toBeTruthy()
+    expect(hasAlertOrErrorClass || hasInvalidInput).toBeTruthy()
   })
 
   test('should require authentication for dashboard', async ({ page }) => {
@@ -63,7 +61,7 @@ test.describe('Authentication Flows', () => {
     if (await registerLink.isVisible().catch(() => false)) {
       await registerLink.click()
       await expect(page).toHaveURL(/\/register/)
-      await expect(page.locator('h1, h2')).toContainText(/register|sign up|create account/i)
+      await expect(page.locator('h1, h2')).toContainText(/register|sign up|create (an )?account/i)
 
       // Navigate back to login
       const loginLink = page.locator('a[href*="login"], a:has-text("Sign in"), a:has-text("Login")').first()
@@ -86,11 +84,6 @@ test.describe('Authentication Flows', () => {
 
     // Should show error message (either toast or inline error)
     await page.waitForTimeout(1000) // Wait for API response
-
-    const errorVisible = await Promise.race([
-      page.locator('text=/invalid|unauthorized|incorrect|wrong credentials/i').first().isVisible().catch(() => false),
-      page.locator('[role="alert"]').first().isVisible().catch(() => false),
-    ])
 
     // Error might not show if backend is not running, so we just check that we didn't navigate away
     const currentUrl = page.url()

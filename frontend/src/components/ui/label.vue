@@ -18,7 +18,7 @@ const computedClass = computed(() =>
 </script>
 
 <template>
-  <label :for="for" :class="computedClass">
+  <label :for="props.for" :class="computedClass">
     <slot />
   </label>
 </template>
