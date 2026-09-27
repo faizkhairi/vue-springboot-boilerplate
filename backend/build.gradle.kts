@@ -1,3 +1,12 @@
+// A plugin on the build classpath pulls commons-lang3 3.16.0
+// (GHSA-j288-q9x7-2f5v, fixed in 3.18.0). Build-time only; the app already
+// resolves 3.20.0. Drop this once the plugin moves past 3.18.
+buildscript {
+    configurations.classpath {
+        resolutionStrategy.force("org.apache.commons:commons-lang3:3.20.0")
+    }
+}
+
 plugins {
     java
     id("org.springframework.boot") version "4.1.1"

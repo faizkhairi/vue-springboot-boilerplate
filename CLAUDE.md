@@ -57,6 +57,8 @@ cd frontend && npm run lint && npm run typecheck && npm test && npm run build
 
 ## Shadcn-vue Component Pattern
 
+Add new components with the CLI, which reads `frontend/components.json` (it is not a project dependency, so run it through npx): `cd frontend && npx shadcn-vue@latest add <component>`.
+
 Components use barrel exports. When importing sub-components:
 
 ```typescript
