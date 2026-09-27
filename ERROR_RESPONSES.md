@@ -1,18 +1,20 @@
 # Standard Error Response Format
 
-All API endpoints follow a consistent error response format for better client-side error handling.
+API error responses use a consistent JSON shape, defined in `backend/src/main/java/com/app/boilerplate/common/dto/ErrorResponse.java`.
 
 ## Format
 
-```typescript
+```json
 {
-  error: {
-    message: string,        // Human-readable error message
-    code?: string,          // Optional error code for programmatic handling
-    details?: any           // Optional additional context (e.g., validation errors)
+  "error": {
+    "message": "Human-readable error message",
+    "code": "ERROR_CODE",
+    "details": {}
   }
 }
 ```
+
+`code` and `details` are omitted from the response when not set (`ErrorResponse` is annotated `@JsonInclude(JsonInclude.Include.NON_NULL)`).
 
 ## Common HTTP Status Codes
 
@@ -21,47 +23,52 @@ All API endpoints follow a consistent error response format for better client-si
 | 400 | Bad Request | Invalid input, validation failed |
 | 401 | Unauthorized | Missing or invalid authentication token |
 | 403 | Forbidden | Authenticated but lacking required permissions |
-| 404 | Not Found | Resource doesn't exist |
-| 409 | Conflict | Resource already exists (e.g., duplicate email) |
-| 429 | Too Many Requests | Rate limit exceeded |
+| 404 | Not Found | Resource does not exist |
+| 409 | Conflict | Resource already exists (for example, duplicate email) |
+| 429 | Too Many Requests | Rate limit exceeded on `/api/auth/**` |
 | 500 | Internal Server Error | Unexpected server error |
 
 ## Examples
 
-### Simple Error
+These are real responses from `AuthController` (`backend/src/main/java/com/app/boilerplate/auth/AuthController.java`).
+
+### Invalid credentials (login)
+
 ```json
 {
   "error": {
-    "message": "User not found"
+    "message": "Invalid email or password",
+    "code": "INVALID_CREDENTIALS"
   }
 }
 ```
 
-### Error with Code
+### Invalid or expired refresh token
+
 ```json
 {
   "error": {
-    "message": "Insufficient permissions to access this resource",
-    "code": "FORBIDDEN"
+    "message": "Invalid refresh token",
+    "code": "UNAUTHORIZED"
   }
 }
 ```
 
-### Validation Error with Details
+### Registration failure (duplicate email)
+
 ```json
 {
   "error": {
-    "message": "Validation failed",
-    "code": "VALIDATION_ERROR",
-    "details": {
-      "email": "Invalid email format",
-      "password": "Password must be at least 8 characters"
-    }
+    "message": "Email already exists",
+    "code": "VALIDATION_ERROR"
   }
 }
 ```
 
-### Rate Limit Error
+### Rate limit error
+
+This is the exact shape `RateLimitFilter` writes when `/api/auth/**` receives more than 5 requests per minute from the same client IP for the same path. The response also carries a `429` status and a `Retry-After` header (seconds until the window resets):
+
 ```json
 {
   "error": {
@@ -71,80 +78,33 @@ All API endpoints follow a consistent error response format for better client-si
 }
 ```
 
-## Implementation
+### Validation error
 
-### Next.js API Routes
+`GlobalExceptionHandler` (`backend/src/main/java/com/app/boilerplate/common/exception/GlobalExceptionHandler.java`) catches `MethodArgumentNotValidException` (a failed `@Valid` on a request body, for example a malformed email on `RegisterRequest`) and returns `400` with a flat field-to-message map, not the `error` envelope above. The messages are Hibernate Validator's default messages for the Bean Validation annotations on the request DTO:
 
-```typescript
-import { NextResponse } from 'next/server'
-
-// Simple error
-return NextResponse.json(
-  { error: { message: 'User not found' } },
-  { status: 404 }
-)
-
-// Error with code
-return NextResponse.json(
-  { error: { message: 'Unauthorized', code: 'AUTH_REQUIRED' } },
-  { status: 401 }
-)
-
-// Validation error
-return NextResponse.json(
-  {
-    error: {
-      message: 'Validation failed',
-      code: 'VALIDATION_ERROR',
-      details: validation.error.format()
-    }
-  },
-  { status: 400 }
-)
-```
-
-### Error Code Constants
-
-```typescript
-export const ERROR_CODES = {
-  // Authentication & Authorization
-  UNAUTHORIZED: 'UNAUTHORIZED',
-  FORBIDDEN: 'FORBIDDEN',
-  INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
-  EMAIL_NOT_VERIFIED: 'EMAIL_NOT_VERIFIED',
-
-  // Validation
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
-  INVALID_INPUT: 'INVALID_INPUT',
-
-  // Resources
-  NOT_FOUND: 'NOT_FOUND',
-  ALREADY_EXISTS: 'ALREADY_EXISTS',
-
-  // Rate Limiting
-  RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
-
-  // Server
-  INTERNAL_ERROR: 'INTERNAL_ERROR',
-  SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
-} as const
+```json
+{
+  "email": "must be a well-formed email address",
+  "name": "must not be blank"
+}
 ```
 
 ## Client-Side Handling
 
 ```typescript
 try {
-  const response = await fetch('/api/endpoint')
+  const response = await fetch('/api/some-endpoint')
   const data = await response.json()
 
   if (!response.ok) {
-    // All errors have the same format
-    const errorMessage = data.error?.message || 'An error occurred'
+    // The error envelope applies to most non-2xx responses.
+    // A 400 from bean validation is the field-map shape shown above instead.
+    const errorMessage = data.error?.message ?? 'An error occurred'
     const errorCode = data.error?.code
 
-    if (errorCode === 'VALIDATION_ERROR') {
-      // Handle validation errors with details
-      console.error('Validation errors:', data.error.details)
+    if (response.status === 429) {
+      const retryAfter = response.headers.get('Retry-After')
+      // Surface retryAfter to the user, or back off and retry.
     }
 
     throw new Error(errorMessage)

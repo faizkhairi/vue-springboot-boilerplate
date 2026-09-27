@@ -18,8 +18,8 @@
  *
  * ## Regenerating Client
  *
- * 1. Start backend: `cd backend && ./gradlew bootRun`
- * 2. Generate OpenAPI spec: `cd backend && ./gradlew generateOpenApiDocs`
+ * 1. Start backend: `cd backend && export JWT_SECRET=$(openssl rand -base64 48) && ./gradlew bootRun`
+ * 2. Fetch OpenAPI spec: `cd backend && curl http://localhost:8080/api-docs -o build/openapi.json`
  * 3. Generate TypeScript client: `cd packages/api-client && npm run generate`
  */
 
