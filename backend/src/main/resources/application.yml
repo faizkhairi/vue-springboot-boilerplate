@@ -23,6 +23,11 @@ spring:
           auth: false
           starttls:
             enable: false
+          # Bound every SMTP call (ms) so a hung mail server cannot hold a
+          # request thread during registration.
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 app:
   url: ${APP_URL:http://localhost:5173}
@@ -35,7 +40,13 @@ app:
   security:
     # Number of trusted reverse-proxy hops in front of this app; used by
     # RateLimitFilter to pick the real client IP out of X-Forwarded-For.
+    # Set 0 when the API is exposed directly (no proxy): forwarding headers
+    # are then ignored.
     trusted-proxy-count: ${TRUSTED_PROXY_COUNT:1}
+
+cors:
+  # Comma-separated origins allowed to call the API.
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:4173,http://localhost:3000}
 
 springdoc:
   api-docs:

@@ -39,6 +39,10 @@ import tools.jackson.databind.ObjectMapper;
  * grouped into one shared "unknown" bucket. X-Real-IP is consulted only when
  * X-Forwarded-For is absent. Otherwise the filter falls back to
  * request.getRemoteAddr().
+ *
+ * <p>Set TRUSTED_PROXY_COUNT=0 when the API is exposed directly with no reverse
+ * proxy: both forwarding headers are then ignored and only the socket address
+ * counts, because without a proxy every header value is chosen by the caller.
  */
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
@@ -67,7 +71,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
         try {
             int parsed = Integer.parseInt(raw.trim());
-            return parsed > 0 ? parsed : DEFAULT_TRUSTED_PROXY_COUNT;
+            return parsed >= 0 ? parsed : DEFAULT_TRUSTED_PROXY_COUNT;
         } catch (NumberFormatException e) {
             return DEFAULT_TRUSTED_PROXY_COUNT;
         }
@@ -162,6 +166,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     String resolveClientIp(HttpServletRequest request) {
+        if (trustedProxyCount == 0) {
+            return request.getRemoteAddr();
+        }
+
         String forwardedFor = request.getHeader("X-Forwarded-For");
         if (forwardedFor != null && !forwardedFor.isBlank()) {
             String[] entries = forwardedFor.split(",");

@@ -40,5 +40,5 @@ When using this boilerplate, ensure you:
 - Use HTTPS in production
 - Keep dependencies updated (`npm audit`, `./gradlew dependencies --write-locks`, or let Dependabot open the PR)
 - Swap the in-memory rate limiter for a shared store before scaling past one instance
-- Set `TRUSTED_PROXY_COUNT` to match your actual reverse proxy chain
+- Set `TRUSTED_PROXY_COUNT` to match your actual reverse proxy chain, or `0` when nothing sits in front of the API. Left at `1` with no proxy, a caller can put any value in `X-Forwarded-For` and sidestep the auth rate limit
 - Set `CORS_ALLOWED_ORIGINS` to only the origins your deployment actually serves
