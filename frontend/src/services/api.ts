@@ -25,7 +25,13 @@ api.interceptors.response.use(
       return Promise.reject(err)
     }
 
+    // A 401 from login or register means wrong credentials, not an expired
+    // session: let the form show the error instead of reloading /login.
     const isRefreshRequest = originalRequest.url?.includes('/api/auth/refresh')
+    if (originalRequest.url?.includes('/api/auth/') && !isRefreshRequest) {
+      return Promise.reject(err)
+    }
+
     if (isRefreshRequest || originalRequest._retry) {
       const auth = useAuthStore()
       auth.clearTokens()

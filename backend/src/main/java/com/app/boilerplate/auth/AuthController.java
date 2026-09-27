@@ -20,13 +20,18 @@ import com.app.boilerplate.user.User;
 import com.app.boilerplate.user.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final UserService userService;
     private final JwtService jwtService;
@@ -82,10 +87,13 @@ public class AuthController {
         try {
             User user = userService.createUser(request.getName(), request.getEmail(), request.getPassword());
 
+            // The account already exists at this point, so a mail failure must not turn
+            // into an error response. MailException (SMTP unreachable, auth refused) is
+            // unchecked, so it is caught alongside MessagingException.
             try {
                 emailService.sendWelcome(user.getEmail(), user.getName(), appUrl);
-            } catch (MessagingException ignored) {
-                // Log in production; do not fail registration
+            } catch (MessagingException | MailException e) {
+                log.warn("Welcome email to user {} failed: {}", user.getId(), e.getMessage());
             }
 
             String access = jwtService.generateAccessToken(user);

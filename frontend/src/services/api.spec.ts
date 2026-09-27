@@ -81,6 +81,17 @@ describe('api client wrapper', () => {
     await expect(responseHandlers[0]!.rejected!(err)).rejects.toBe(err)
   })
 
+  it.each(['/api/auth/login', '/api/auth/register'])(
+    'rejects a 401 from %s without redirecting, so the form can show it',
+    async (url) => {
+      const err = makeError(401, { url, headers: {} })
+
+      await expect(responseHandlers[0]!.rejected!(err)).rejects.toBe(err)
+      expect(window.location.href).toBe('')
+      expect(postMock).not.toHaveBeenCalled()
+    }
+  )
+
   it('clears tokens and redirects when the refresh request itself returns 401', async () => {
     const auth = useAuthStore()
     auth.setTokens('access-token', 'refresh-token')
