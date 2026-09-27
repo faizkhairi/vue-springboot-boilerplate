@@ -17,7 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.MailSendException;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -59,14 +60,9 @@ class AuthControllerTest {
      * There is no live SMTP server in the test environment. AuthController sends a
      * welcome email on registration, so JavaMailSender is mocked here rather than
      * letting the real implementation try (and fail) to connect to an SMTP host.
-     *
-     * <p>The mock is typed as the concrete JavaMailSenderImpl rather than the
-     * JavaMailSender interface: Actuator's mail health contributor looks up beans by
-     * the concrete JavaMailSenderImpl type and fails startup if none are found, so an
-     * interface-typed mock would break the application context here.
      */
     @MockitoBean
-    private JavaMailSenderImpl javaMailSender;
+    private JavaMailSender javaMailSender;
 
     @Test
     void registerThenLogin() throws Exception {
@@ -91,6 +87,28 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(login)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void registerSucceedsWhenTheWelcomeEmailCannotBeSent() throws Exception {
+        Mockito.when(javaMailSender.createMimeMessage())
+                .thenReturn(new MimeMessage(Session.getInstance(new Properties())));
+        Mockito.doThrow(new MailSendException("SMTP unreachable"))
+                .when(javaMailSender)
+                .send(Mockito.any(MimeMessage.class));
+
+        RegisterRequest register = new RegisterRequest();
+        register.setName("Mail Down");
+        register.setEmail("mail-down@example.com");
+        register.setPassword("password123");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(register)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").isNotEmpty());
+
+        Mockito.verify(javaMailSender).send(Mockito.any(MimeMessage.class));
     }
 
     @Test
