@@ -1,0 +1,25 @@
+name: Dependency submission
+
+# Sends the resolved Gradle dependency graph to GitHub so Dependabot alerts
+# cover the backend (Dependabot cannot resolve Gradle builds on its own).
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  gradle:
+    name: Submit Gradle dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/dependency-submission@v6
+        with:
+          build-root-directory: backend
