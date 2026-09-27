@@ -3,9 +3,10 @@
   "style": "default",
   "typescript": true,
   "tailwind": {
-    "config": "tailwind.config.js",
-    "css": "src/assets/index.css",
-    "baseColor": "slate"
+    "config": "",
+    "css": "src/style.css",
+    "baseColor": "slate",
+    "cssVariables": true
   },
   "aliases": {
     "components": "@/components",

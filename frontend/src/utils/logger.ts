@@ -10,7 +10,7 @@
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 interface LogContext {
-  [key: string]: any
+  [key: string]: unknown
 }
 
 class Logger {
@@ -54,7 +54,7 @@ class Logger {
   /**
    * Log audit events (auth, security, etc.)
    */
-  audit(event: string, data: Record<string, any>) {
+  audit(event: string, data: Record<string, unknown>) {
     this.info(`[AUDIT] ${event}`, { audit: true, event, ...data })
   }
 }
@@ -74,7 +74,7 @@ export function createLogger(context: LogContext) {
       logger.warn(message, { ...context, ...additionalContext }),
     error: (message: string, error?: Error, additionalContext?: LogContext) =>
       logger.error(message, error, { ...context, ...additionalContext }),
-    audit: (event: string, data: Record<string, any>) =>
+    audit: (event: string, data: Record<string, unknown>) =>
       logger.audit(event, { ...context, ...data }),
   }
 }
