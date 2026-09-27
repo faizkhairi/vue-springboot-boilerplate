@@ -88,7 +88,7 @@ All variables are documented with placeholders in `.env.example`.
 | `SMTP_FROM` | Yes | Sender address for outgoing email |
 | `APP_URL` | Yes | Base URL used in email links |
 | `CORS_ALLOWED_ORIGINS` | Optional | Comma-separated list of origins allowed to call the API. Default: `http://localhost:5173,http://localhost:4173,http://localhost:3000` |
-| `TRUSTED_PROXY_COUNT` | Optional | Reverse proxies in front of the API that append to `X-Forwarded-For` (default `1`); sets which entry the auth rate limiter trusts as the client IP |
+| `TRUSTED_PROXY_COUNT` | Optional | Reverse proxies in front of the API that append to `X-Forwarded-For` (default `1`); sets which entry the auth rate limiter trusts as the client IP. Use `0` when the API is exposed directly, so forwarding headers are ignored |
 | `VITE_API_BASE_URL` | Optional | Frontend API base URL. Empty means relative `/api`, which the Vite dev and preview servers proxy to `http://localhost:8080` |
 
 ## Scripts
@@ -185,7 +185,7 @@ docker/
 ## Security
 
 - **Headers and CSP**: `backend/src/main/java/com/app/boilerplate/config/SecurityConfig.java` sets a Content-Security-Policy plus `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options: DENY`, `Permissions-Policy`, and HSTS on every response.
-- **Rate limiting**: `RateLimitFilter` limits `/api/auth/**` to 5 requests per minute per client IP per path, responding `429` with a `Retry-After` header. It reads the client IP as the `X-Forwarded-For` entry `TRUSTED_PROXY_COUNT` hops from the right, not the spoofable leftmost entry. It is in-memory and per instance: a multi-instance deployment needs a shared store (for example Redis) to enforce one limit across instances.
+- **Rate limiting**: `RateLimitFilter` limits `/api/auth/**` to 5 requests per minute per client IP per path, responding `429` with a `Retry-After` header. It reads the client IP as the `X-Forwarded-For` entry `TRUSTED_PROXY_COUNT` hops from the right, not the spoofable leftmost entry. With `TRUSTED_PROXY_COUNT=0` (no proxy in front) it ignores forwarding headers and uses the socket address. It is in-memory and per instance: a multi-instance deployment needs a shared store (for example Redis) to enforce one limit across instances.
 - **JWT secret**: `JWT_SECRET` has no default and must be at least 32 bytes; the app fails fast at startup otherwise.
 - **Actuator**: only `/actuator/health` is exposed. The mail health indicator is disabled on purpose, so an SMTP outage does not mark the API unhealthy.
 - **Secret scanning**: gitleaks runs in CI on every push and pull request.

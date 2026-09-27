@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import jakarta.servlet.FilterChain;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import tools.jackson.databind.json.JsonMapper;
@@ -125,6 +126,37 @@ class RateLimitFilterTest {
         RateLimitFilter filter = newFilter("not-a-number");
         MockHttpServletRequest request = authRequest(null);
         request.addHeader("X-Forwarded-For", "198.51.100.1, 203.0.113.99");
+
+        assertThat(filter.resolveClientIp(request)).isEqualTo("203.0.113.99");
+    }
+
+    @Test
+    void trustedProxyCountOfZeroIgnoresForwardingHeadersAndUsesTheSocketAddress() throws Exception {
+        RateLimitFilter filter = newFilter("0");
+
+        MockHttpServletRequest withHeaders = authRequest("203.0.113.99");
+        withHeaders.addHeader("X-Real-IP", "203.0.113.200");
+        withHeaders.setRemoteAddr("192.0.2.5");
+        assertThat(filter.resolveClientIp(withHeaders)).isEqualTo("192.0.2.5");
+
+        // A directly exposed API must not let a caller rotate buckets by
+        // inventing a new X-Forwarded-For value on every request.
+        for (int i = 0; i < 5; i++) {
+            MockHttpServletRequest request = authRequest("198.51.100." + i);
+            request.setRemoteAddr("192.0.2.5");
+            filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
+        }
+        MockHttpServletRequest sixth = authRequest("198.51.100.250");
+        sixth.setRemoteAddr("192.0.2.5");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        filter.doFilter(sixth, response, new MockFilterChain());
+        assertThat(response.getStatus()).isEqualTo(429);
+    }
+
+    @Test
+    void negativeTrustedProxyCountFallsBackToOne() {
+        RateLimitFilter filter = newFilter("-2");
+        MockHttpServletRequest request = authRequest("198.51.100.1, 203.0.113.99");
 
         assertThat(filter.resolveClientIp(request)).isEqualTo("203.0.113.99");
     }
