@@ -9,7 +9,6 @@ package com.app.boilerplate.auth;
  * @see com.app.boilerplate.auth.JwtService
  * @see com.app.boilerplate.user.UserService
  */
-
 import com.app.boilerplate.auth.dto.LoginRequest;
 import com.app.boilerplate.auth.dto.RefreshRequest;
 import com.app.boilerplate.auth.dto.RegisterRequest;
@@ -37,10 +36,8 @@ public class AuthController {
     @Value("${app.url:http://localhost:5173}")
     private String appUrl;
 
-    public AuthController(UserService userService,
-                          JwtService jwtService,
-                          EmailService emailService,
-                          AuditLogger auditLogger) {
+    public AuthController(
+            UserService userService, JwtService jwtService, EmailService emailService, AuditLogger auditLogger) {
         this.userService = userService;
         this.jwtService = jwtService;
         this.emailService = emailService;
@@ -58,15 +55,13 @@ public class AuthController {
         String token = request.getRefreshToken();
         if (token == null || !jwtService.isTokenValid(token) || !jwtService.isRefreshToken(token)) {
             auditLogger.log("TOKEN_REFRESH_INVALID", null);
-            return ResponseEntity.status(401)
-                    .body(new ErrorResponse("Invalid refresh token", "UNAUTHORIZED"));
+            return ResponseEntity.status(401).body(new ErrorResponse("Invalid refresh token", "UNAUTHORIZED"));
         }
         String email = jwtService.extractEmail(token);
         User user = userService.findByEmail(email).orElse(null);
         if (user == null) {
             auditLogger.log("TOKEN_REFRESH_USER_NOT_FOUND", null);
-            return ResponseEntity.status(401)
-                    .body(new ErrorResponse("User not found", "UNAUTHORIZED"));
+            return ResponseEntity.status(401).body(new ErrorResponse("User not found", "UNAUTHORIZED"));
         }
         String access = jwtService.generateAccessToken(user);
         String refresh = jwtService.generateRefreshToken(user);
@@ -85,11 +80,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         try {
-            User user = userService.createUser(
-                    request.getName(),
-                    request.getEmail(),
-                    request.getPassword()
-            );
+            User user = userService.createUser(request.getName(), request.getEmail(), request.getPassword());
 
             try {
                 emailService.sendWelcome(user.getEmail(), user.getName(), appUrl);
@@ -101,8 +92,7 @@ public class AuthController {
             String refresh = jwtService.generateRefreshToken(user);
             return ResponseEntity.ok(new TokenResponse(access, refresh));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(new ErrorResponse(e.getMessage(), "VALIDATION_ERROR"));
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), "VALIDATION_ERROR"));
         }
     }
 

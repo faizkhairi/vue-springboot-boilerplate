@@ -14,17 +14,15 @@ package com.app.boilerplate.auth;
  *
  * @see com.app.boilerplate.auth.JwtAuthFilter
  */
-
 import com.app.boilerplate.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import javax.crypto.SecretKey;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
@@ -39,8 +37,7 @@ public class JwtService {
     public JwtService(
             @Value("${app.jwt.secret}") String secret,
             @Value("${app.jwt.access-validity-ms}") long accessValidityMs,
-            @Value("${app.jwt.refresh-validity-ms}") long refreshValidityMs
-    ) {
+            @Value("${app.jwt.refresh-validity-ms}") long refreshValidityMs) {
         validateSecret(secret);
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.accessValidityMs = accessValidityMs;
@@ -56,16 +53,13 @@ public class JwtService {
     static void validateSecret(String secret) {
         if (secret == null || secret.isBlank()) {
             throw new IllegalStateException(
-                    "app.jwt.secret (JWT_SECRET) is not set. Generate one with: openssl rand -base64 48"
-            );
+                    "app.jwt.secret (JWT_SECRET) is not set. Generate one with: openssl rand -base64 48");
         }
         int byteLength = secret.getBytes(StandardCharsets.UTF_8).length;
         if (byteLength < MIN_SECRET_BYTES) {
-            throw new IllegalStateException(
-                    "app.jwt.secret (JWT_SECRET) must be at least " + MIN_SECRET_BYTES
-                            + " bytes (256 bits) for HS256, but got " + byteLength
-                            + " bytes. Generate one with: openssl rand -base64 48"
-            );
+            throw new IllegalStateException("app.jwt.secret (JWT_SECRET) must be at least " + MIN_SECRET_BYTES
+                    + " bytes (256 bits) for HS256, but got " + byteLength
+                    + " bytes. Generate one with: openssl rand -base64 48");
         }
     }
 
@@ -137,10 +131,6 @@ public class JwtService {
     }
 
     private Claims getClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
     }
 }

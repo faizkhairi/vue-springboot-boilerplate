@@ -1,10 +1,9 @@
 package com.app.boilerplate.user;
 
 import com.app.boilerplate.common.util.AuditLogger;
+import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 /**
  * User business logic service
@@ -18,9 +17,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuditLogger auditLogger;
 
-    public UserService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder,
-                       AuditLogger auditLogger) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuditLogger auditLogger) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.auditLogger = auditLogger;

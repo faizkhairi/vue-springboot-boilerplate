@@ -1,13 +1,12 @@
 # Java / Gradle
 backend/build/
 backend/.gradle/
-backend/gradle/
-backend/gradlew
-backend/gradlew.bat
+backend/logs/
 *.class
 *.jar
 *.war
 *.ear
+!backend/gradle/wrapper/gradle-wrapper.jar
 
 # Node / Frontend
 frontend/node_modules/

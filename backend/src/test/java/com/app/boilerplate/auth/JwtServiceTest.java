@@ -1,12 +1,12 @@
 package com.app.boilerplate.auth;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 /**
  * Regression coverage for the JWT_SECRET fail-fast validation: this
@@ -57,7 +57,6 @@ class JwtServiceTest {
 
     @Test
     void constructingWithAnInvalidSecretFailsFast() {
-        assertThatIllegalStateException()
-                .isThrownBy(() -> new JwtService("too-short", 900_000L, 604_800_000L));
+        assertThatIllegalStateException().isThrownBy(() -> new JwtService("too-short", 900_000L, 604_800_000L));
     }
 }
