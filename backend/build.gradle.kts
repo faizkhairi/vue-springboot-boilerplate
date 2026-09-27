@@ -19,6 +19,11 @@ repositories {
     mavenCentral()
 }
 
+// Boot 4.1.1 manages Tomcat 11.0.24, which has three critical advisories
+// (GHSA-9xv2-5v5q-p794, GHSA-gcx9-497g-6cp6, GHSA-h3x4-894j-xpx5) fixed in
+// 11.0.25. Drop this once a Boot release manages 11.0.25 or later.
+extra["tomcat.version"] = "11.0.26"
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")

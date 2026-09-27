@@ -1,0 +1,51 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: "/frontend"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+    # Majors held back on purpose. Drop an entry once its blocker clears.
+    ignore:
+      # typescript-eslint peers typescript <6.1.0
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # Types track the Node LTS the template targets (24), not Node Current
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+    groups:
+      npm-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+  # After a Gradle update, refresh the lockfile on the branch with
+  # ./gradlew dependencies --write-locks
+  - package-ecosystem: gradle
+    directory: "/backend"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      gradle-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci(deps)"
+    groups:
+      actions-minor-patch:
+        update-types:
+          - minor
+          - patch
