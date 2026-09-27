@@ -4,15 +4,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Enumeration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
-
-import java.io.IOException;
-import java.util.Enumeration;
 
 /**
  * Filter to log all HTTP requests and responses
@@ -28,8 +27,10 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 
         long startTime = System.currentTimeMillis();
 
-        // Wrap request and response to cache content
-        ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(request);
+        // Wrap request and response to cache content. The request wrapper caps how much of
+        // the body it buffers in memory; logRequest() only reads headers, not the cached
+        // body, but the cap still bounds memory use for large request payloads.
+        ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(request, 64 * 1024);
         ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(response);
 
         try {
@@ -46,7 +47,8 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         }
     }
 
-    private void logRequest(ContentCachingRequestWrapper request, ContentCachingResponseWrapper response, long duration) {
+    private void logRequest(
+            ContentCachingRequestWrapper request, ContentCachingResponseWrapper response, long duration) {
         String method = request.getMethod();
         String uri = request.getRequestURI();
         String queryString = request.getQueryString();
@@ -63,7 +65,10 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             Enumeration<String> headerNames = request.getHeaderNames();
             while (headerNames.hasMoreElements()) {
                 String headerName = headerNames.nextElement();
-                headers.append(headerName).append(": ").append(request.getHeader(headerName)).append(", ");
+                headers.append(headerName)
+                        .append(": ")
+                        .append(request.getHeader(headerName))
+                        .append(", ");
             }
 
             logger.debug("Request Headers: {}", headers);

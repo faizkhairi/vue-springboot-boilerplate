@@ -1,11 +1,10 @@
 package com.app.boilerplate.common.util;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Utility for logging audit events (auth, security, data changes)

@@ -13,8 +13,7 @@ public class TokenResponse {
     private String refreshToken;
     private String tokenType = "Bearer";
 
-    public TokenResponse() {
-    }
+    public TokenResponse() {}
 
     public TokenResponse(String accessToken, String refreshToken) {
         this.accessToken = accessToken;

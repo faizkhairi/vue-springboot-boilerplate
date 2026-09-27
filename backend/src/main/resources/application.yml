@@ -32,9 +32,24 @@ app:
     secret: ${JWT_SECRET}
     access-validity-ms: 900000
     refresh-validity-ms: 604800000
+  security:
+    # Number of trusted reverse-proxy hops in front of this app; used by
+    # RateLimitFilter to pick the real client IP out of X-Forwarded-For.
+    trusted-proxy-count: ${TRUSTED_PROXY_COUNT:1}
 
 springdoc:
   api-docs:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    # An SMTP outage should not mark the API unhealthy and pull it out of a
+    # load balancer; email sending already logs its own failures.
+    mail:
+      enabled: false
