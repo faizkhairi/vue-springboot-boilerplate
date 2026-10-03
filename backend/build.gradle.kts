@@ -3,7 +3,7 @@
 // resolves 3.20.0. Drop this once the plugin moves past 3.18.
 buildscript {
     configurations.classpath {
-        resolutionStrategy.force("org.apache.commons:commons-lang3:3.20.0")
+        resolutionStrategy.force("org.apache.commons:commons-lang3:3.21.0")
     }
 }
 
