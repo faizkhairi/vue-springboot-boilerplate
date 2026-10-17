@@ -150,7 +150,7 @@ jobs:
 
       # Reads backend/gradle.lockfile and fails on any known vulnerability.
       - name: Backend audit (OSV)
-        uses: google/osv-scanner-action/osv-scanner-action@v2.6.0
+        uses: google/osv-scanner-action/osv-scanner-action@v2.7.0
         with:
           scan-args: |-
             --lockfile=backend/gradle.lockfile
