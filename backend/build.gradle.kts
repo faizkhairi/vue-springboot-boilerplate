@@ -3,7 +3,7 @@
 // resolves 3.20.0. Drop this once the plugin moves past 3.18.
 buildscript {
     configurations.classpath {
-        resolutionStrategy.force("org.apache.commons:commons-lang3:3.20.0")
+        resolutionStrategy.force("org.apache.commons:commons-lang3:3.21.0")
     }
 }
 
@@ -11,7 +11,7 @@ plugins {
     java
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.diffplug.spotless") version "8.10.3"
+    id("com.diffplug.spotless") version "8.10.4"
     jacoco
 }
 
