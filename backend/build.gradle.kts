@@ -33,6 +33,12 @@ repositories {
 // 11.0.25. Drop this once a Boot release manages 11.0.25 or later.
 extra["tomcat.version"] = "11.0.26"
 
+// Boot 4.1.1 manages Jackson 3.1.5 and Jackson 2.21.5, which have high advisories
+// (GHSA-7hhh-6rmp-j9qf, GHSA-p6pp-m3f8-5c89, GHSA-cxp5-3px4-pw24, GHSA-wv8q-qhhj-9h54,
+// GHSA-q4xh-88c3-wmh7) fixed in 3.1.7 and 2.21.7. Drop these once Boot manages them.
+extra["jackson-bom.version"] = "3.1.7"
+extra["jackson-2-bom.version"] = "2.21.7"
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
