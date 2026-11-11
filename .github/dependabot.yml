@@ -4,8 +4,8 @@ updates:
   - package-ecosystem: npm
     directory: "/frontend"
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
+      interval: monthly
+    open-pull-requests-limit: 2
     commit-message:
       prefix: "chore(deps)"
     # Majors held back on purpose. Drop an entry once its blocker clears.
@@ -18,34 +18,49 @@ updates:
         update-types: ["version-update:semver-major"]
     groups:
       npm-minor-patch:
+        applies-to: version-updates
         update-types:
           - minor
           - patch
+      npm-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
 
   # After a Gradle update, refresh the lockfile on the branch with
   # ./gradlew dependencies --write-locks
   - package-ecosystem: gradle
     directory: "/backend"
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
+      interval: monthly
+    open-pull-requests-limit: 2
     commit-message:
       prefix: "chore(deps)"
     groups:
       gradle-minor-patch:
+        applies-to: version-updates
         update-types:
           - minor
           - patch
+      gradle-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
 
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
+      interval: monthly
+    open-pull-requests-limit: 2
     commit-message:
       prefix: "ci(deps)"
     groups:
       actions-minor-patch:
+        applies-to: version-updates
         update-types:
           - minor
           - patch
+      actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
